@@ -45,7 +45,52 @@ namespace Expense_Tracker.Controllers
             culture.NumberFormat.CurrencyNegativePattern = 1;
             ViewBag.Balance = String.Format(culture, "{0:C0}", Balance);
 
+            //Doughnut chart
+            ViewBag.DoughnutChartData = SelectedTransactions
+                 .Where(i => i.Category.Type == "Expense")
+                 .GroupBy(j => j.Category.CategoryId)
+                 .Select(k => new
+                 {
+                     categoryTitleWithIcon = k.First().Category.Icon + " " + k.First().Category.Title,
+                     amount = k.Sum(j => j.Amount),
+                     formattedAmount = k.Sum(j => j.Amount).ToString("C0"),
+                 })
+                 .OrderByDescending(l => l.amount)
+                 .ToList();
+
+            //Spline Chart - Income vs Expense
+
+            //Income
+            List<SplineChartData> IncomeSummary = SelectedTransactions
+                .Where(i => i.Category.Type == "Income")
+                .GroupBy(j => j.Date)
+                .Select(k => new SplineChartData()
+                {
+                    day = k.First().Date.ToString("dd-MMM"),
+                    income = k.Sum(l => l.Amount)
+                })
+                .ToList();
+
+            //Expense
+            List<SplineChartData> ExpenseSummary = SelectedTransactions
+                .Where(i => i.Category.Type == "Expense")
+                .GroupBy(j => j.Date)
+                .Select(k => new SplineChartData()
+                {
+                    day = k.First().Date.ToString("dd-MMM"),
+                    expense = k.Sum(l => l.Amount)
+                })
+                .ToList();
+
             return View();
         }
+    }
+
+    public class SplineChartData
+    {
+        public string day;
+        public int income;
+        public int expense;
+
     }
 }

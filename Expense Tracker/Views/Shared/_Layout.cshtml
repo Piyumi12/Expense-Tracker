@@ -41,9 +41,9 @@
     </header>
     <div class="main-content">
 
-   
-    <div class="container mt-5">
-        <div class="row justify-content-center">
+
+        <div class="container mt-5">
+            <div class="row justify-content-center">
                 <div class="@(ViewData["isDashboard"] == null?"col-md-10":"col-md-12")">
                     <main role="main" class="pb-3">
                         @if (ViewData["isDashboard"] == null)
@@ -70,15 +70,15 @@
                                 </div>
                             </div>
                         }
-                    @RenderBody()
-                </main>
+                        @RenderBody()
+                    </main>
+                </div>
             </div>
+
         </div>
-       
-    </div>
     </div>
 
-    
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
