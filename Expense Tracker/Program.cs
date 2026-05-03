@@ -13,7 +13,7 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 
 
-var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
