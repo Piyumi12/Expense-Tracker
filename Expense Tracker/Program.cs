@@ -1,34 +1,46 @@
-using Expense_Tracker.Models; 
-using Microsoft.EntityFrameworkCore; 
+using Expense_Tracker.Models;
+using Microsoft.EntityFrameworkCore;
 
+var builder = WebApplication.CreateBuilder(args);
 
-var builder = WebApplication.CreateBuilder(args); 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; 
-//builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+// Render port binding
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// Add services
+builder.Services.AddControllersWithViews();
 
-// Add services to the container.
- builder.Services.AddControllersWithViews();
-  //dependancy Injection 
- 
-  builder.Services.AddDbContext<ApplicationDbContext>(options =>
-  options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
-   var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DevConnection"); 
-   builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString)); 
-   //Register Syncfusion license 
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5QdEViXX9XcnFUT2dV"); 
-   var app = builder.Build();
+// PostgreSQL connection string from Render
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DevConnection");
 
-   // Configure the HTTP request pipeline. 
-//if (!app.Environment.IsDevelopment()) { 
-  //  app.UseExceptionHandler("/Home/Error"); 
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new Exception("Database connection string is missing.");
+}
 
-//} 
+// PostgreSQL DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Syncfusion license
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(
+    "Mgo+DSMBMAY9C3t2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5QdEViXX9XcnFUT2dV"
+);
+
+var app = builder.Build();
+
+// TEMPORARY debugging
 app.UseDeveloperExceptionPage();
-app.UseStaticFiles(); 
 
-app.UseRouting(); 
+app.UseStaticFiles();
 
-app.UseAuthorization(); 
-app.MapControllerRoute( name: "default", pattern: "{controller=Dashboard}/{action=Index}/{id?}");
- app.Run();
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}"
+);
+
+app.Run();
