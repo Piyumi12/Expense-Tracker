@@ -3,34 +3,44 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Render port binding
+// Railway/Render port support
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-// Add services
+// Add services to the container
 builder.Services.AddControllersWithViews();
 
-// PostgreSQL connection string from Render
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DevConnection");
+// Connection String
+var connectionString =
+    Environment.GetEnvironmentVariable("ConnectionStrings__DevConnection")
+    ?? builder.Configuration.GetConnectionString("DevConnection");
 
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new Exception("Database connection string is missing.");
-}
-
-// PostgreSQL DbContext
+// MySQL Configuration
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)
+    ));
 
-// Syncfusion license
+// Register Syncfusion license
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(
     "Mgo+DSMBMAY9C3t2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5QdEViXX9XcnFUT2dV"
 );
 
 var app = builder.Build();
 
-// TEMPORARY debugging
-app.UseDeveloperExceptionPage();
+// Configure HTTP request pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
@@ -43,11 +53,4 @@ app.MapControllerRoute(
     pattern: "{controller=Dashboard}/{action=Index}/{id?}"
 );
 
-
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-}
 app.Run();
